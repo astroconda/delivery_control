@@ -49,7 +49,10 @@ while (( "${#}" )); do
 	    shift 2
 	    ;;
 	-i|--iteration)
-	    ITER=$(printf %02d ${2})
+	    case ${2} in
+		''|*[!0-9]*) ITER=${2} ;;
+		*) ITER=$(printf %02d ${2}) ;;
+	    esac
 	    shift 2
 	    ;;
 	--) # end argument parsing
