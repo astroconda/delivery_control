@@ -30,7 +30,8 @@ def gen_specfiles(label) {
         def pkg_list = aux_packages.replaceAll('\n', ' ')
 
         def flags = ""
-        if ("${final}" == "true") {
+        println("${finalize} - finalize")
+        if ("${finalize}" == "true") {
             flags = "--final"
         }
 
