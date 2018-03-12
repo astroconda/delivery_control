@@ -29,12 +29,17 @@ def gen_specfiles(label) {
         def cpkgs = "conda=${conda_version}"
         def pkg_list = aux_packages.replaceAll('\n', ' ')
 
+        def flags = ""
+        if (final == "true") {
+            flags = "--final"
+        }
+
         withEnv(["HOME=${HOME}", "PATH=${PATH}"]) {
             sh "conda install --quiet --yes ${cpkgs}"
 
             // Generate spec files
-            sh "${WORKDIR}/mktestenv.sh -n ${delivery_name} -p 3.5 ${pkg_list}"
-            sh "${WORKDIR}/mktestenv.sh -n ${delivery_name} -p 3.6 ${pkg_list}"
+            sh "${WORKDIR}/mktestenv.sh -n ${delivery_name} -p 3.5 ${flags} ${pkg_list}"
+            sh "${WORKDIR}/mktestenv.sh -n ${delivery_name} -p 3.6 ${flags} ${pkg_list}"
        
             // Make spec files available to master node. 
             stash name: "spec-stash-${label}", includes: "hstdp*.txt"
