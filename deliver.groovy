@@ -34,8 +34,8 @@ def gen_specfiles(label) {
             sh "conda install --quiet --yes ${cpkgs}"
 
             // Generate spec files
-            sh "${WORKDIR}/mktestenv.sh -n ${delivery_name} -p 3.5 -i ${delivery_iteration} ${pkg_list}"
-            sh "${WORKDIR}/mktestenv.sh -n ${delivery_name} -p 3.6 -i ${delivery_iteration} ${pkg_list}"
+            sh "${WORKDIR}/mktestenv.sh -n ${delivery_name} -p 3.5 ${pkg_list}"
+            sh "${WORKDIR}/mktestenv.sh -n ${delivery_name} -p 3.6 ${pkg_list}"
        
             // Make spec files available to master node. 
             stash name: "spec-stash-${label}", includes: "hstdp*.txt"
