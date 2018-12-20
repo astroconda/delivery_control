@@ -75,7 +75,7 @@ node('master') {
         // Retrieve the spec files from the nodes where they were created.
         unstash "spec-stash-RHEL-6"
         unstash "spec-stash-OSX-10.11"
-        hostname = sh(script: "hostname", returnStdout: true).tokenize(".")[0]
+        hostname = remote_host.tokenize(".")[0]
         withCredentials([usernamePassword(credentialsId: '322ad15d-2f5b-4d06-87fa-b45a88596f30',
             usernameVariable: 'USERNAME',
             passwordVariable: 'PASSWORD')]) {
