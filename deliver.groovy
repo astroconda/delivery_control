@@ -6,7 +6,6 @@
 //   aux_packages
 //   conda_installer_version
 //   conda_version
-//   remote_host
 //   output_dir
 
 def gen_specfiles(label) {
@@ -51,6 +50,15 @@ def gen_specfiles(label) {
             stash name: "spec-stash-${label}", includes: "${delivery_pipeline}*.txt"
         }
     }
+
+    node(label) {
+        stage('archive') {
+            // Retrieve the spec files from the nodes where they were created.
+            dir(output_dir) {
+                unstash "spec-stash-${label}"
+            }
+        }
+    }
 }
 
 
@@ -62,7 +70,7 @@ node('master') {
                        artifactNumToKeepStr: '',
                        daysToKeepStr: '',
                        numToKeepStr: '4')), pipelineTriggers([])])
-    stage('create specfiles') {
+    stage('deploy specfiles') {
         deleteDir()
         sh "cp -r ${WORKSPACE}@script/*.sh ."
         stash name: "script", includes: "*.sh"
@@ -70,17 +78,5 @@ node('master') {
             Linux: { gen_specfiles('RHEL-6') },
             MacOS: { gen_specfiles('OSX-10.11') }
         )
-    }
-
-    stage('archive') {
-        // Retrieve the spec files from the nodes where they were created.
-        unstash "spec-stash-RHEL-6"
-        unstash "spec-stash-OSX-10.11"
-        hostname = remote_host.tokenize(".")[0]
-        withCredentials([usernamePassword(credentialsId: remote_credentials,
-            usernameVariable: 'USERNAME',
-            passwordVariable: 'PASSWORD')]) {
-                sh "rsync -avzr ${delivery_pipeline}*.txt ${USERNAME}@${hostname}:${output_dir}"
-           }
     }
 }
