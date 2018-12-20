@@ -6,6 +6,7 @@
 //   aux_packages
 //   conda_installer_version
 //   conda_version
+//   remote_host
 //   output_dir
 
 def gen_specfiles(label) {
@@ -79,7 +80,7 @@ node('master') {
         withCredentials([usernamePassword(credentialsId: '322ad15d-2f5b-4d06-87fa-b45a88596f30',
             usernameVariable: 'USERNAME',
             passwordVariable: 'PASSWORD')]) {
-                sh "rsync -avzr hstdp*.txt ${USERNAME}@${hostname}:${output_dir}"
+                sh "rsync -avzr ${delivery_pipeline}*.txt ${USERNAME}@${hostname}:${output_dir}"
            }
     }
 }
