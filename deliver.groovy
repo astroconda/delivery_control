@@ -26,7 +26,7 @@ def gen_specfiles(label) {
         def WORKDIR = pwd()
         println("WORKDIR = ${WORKDIR}")
 
-        conda.install()
+        conda.install(conda_installer_version)
 
         PATH = "${WORKDIR}/miniconda/bin:${PATH}"
         def cpkgs = "conda=${conda_version}"
