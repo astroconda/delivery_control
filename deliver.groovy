@@ -7,7 +7,7 @@
 //   output_dir
 
 def gen_specfiles(label) {
-    
+
     node(label) {
 
         // Delete any existing job workspace directory contents.
@@ -41,8 +41,8 @@ def gen_specfiles(label) {
             // Generate spec files
             sh "${WORKDIR}/mktestenv.sh -n ${delivery_name} -p 3.5 ${flags} ${pkg_list}"
             sh "${WORKDIR}/mktestenv.sh -n ${delivery_name} -p 3.6 ${flags} ${pkg_list}"
-       
-            // Make spec files available to master node. 
+
+            // Make spec files available to master node.
             stash name: "spec-stash-${label}", includes: "hstdp*.txt"
         }
     }
