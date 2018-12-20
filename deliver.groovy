@@ -1,6 +1,8 @@
 @Library('env_utils') _
 // Parameters made available from Jenkins job configuration:
+//   delivery_pipeline
 //   delivery_name
+//   metapackage (i.e. the environment's base)
 //   aux_packages
 //   conda_installer_version
 //   conda_version
@@ -28,6 +30,7 @@ def gen_specfiles(label) {
         PATH = "${WORKDIR}/miniconda/bin:${PATH}"
         def cpkgs = "conda=${conda_version}"
         def pkg_list = aux_packages.replaceAll('\n', ' ')
+        def py_list = python_versions.split('\n')
 
         def flags = ""
         println("${finalize} - finalize")
@@ -39,11 +42,12 @@ def gen_specfiles(label) {
             sh "conda install --quiet --yes ${cpkgs}"
 
             // Generate spec files
-            sh "${WORKDIR}/mktestenv.sh -n ${delivery_name} -p 3.5 ${flags} ${pkg_list}"
-            sh "${WORKDIR}/mktestenv.sh -n ${delivery_name} -p 3.6 ${flags} ${pkg_list}"
+            for (String py_version : py_list) {
+                sh "${WORKDIR}/mktestenv.sh -d ${delivery_pipeline} -n ${delivery_name} -p ${py_version} -m ${metapackage} ${flags} ${pkg_list}"
+            }
 
             // Make spec files available to master node.
-            stash name: "spec-stash-${label}", includes: "hstdp*.txt"
+            stash name: "spec-stash-${label}", includes: "${delivery_pipeline}*.txt"
         }
     }
 }
