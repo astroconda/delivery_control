@@ -77,7 +77,7 @@ node('master') {
         unstash "spec-stash-RHEL-6"
         unstash "spec-stash-OSX-10.11"
         hostname = remote_host.tokenize(".")[0]
-        withCredentials([usernamePassword(credentialsId: '322ad15d-2f5b-4d06-87fa-b45a88596f30',
+        withCredentials([usernamePassword(credentialsId: remote_credentials,
             usernameVariable: 'USERNAME',
             passwordVariable: 'PASSWORD')]) {
                 sh "rsync -avzr ${delivery_pipeline}*.txt ${USERNAME}@${hostname}:${output_dir}"
