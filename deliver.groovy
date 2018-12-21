@@ -52,7 +52,7 @@ def gen_specfiles(label) {
     }
 
     node(label) {
-        stage('archive') {
+        stage("archive-${label}") {
             // Retrieve the spec files from the nodes where they were created.
             dir(output_dir) {
                 unstash "spec-stash-${label}"
