@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Create a conda environment specification file for an HSTDP
+# Create a conda environment specification file for a pipeline
 # delivery. Automatically number the iteration based on spec
 # files that already exist in the astroconda-releases repository.
 # Automatically base iterations on the spec files produced by
@@ -29,12 +29,14 @@ then
     printf "
 Usage: ${scriptname} [-n] [-p] [-i] <packages...>
 
-Produce a conda spec file for the next needed HSTDP delivery iteration.
+Produce a conda spec file for the next needed pipeline delivery iteration.
 Iterations within a given release name build upon one another, such that
 01 = 00 + any necessary changes.
 
--n --hstdp-name  Name of HSTDP release (i.e. 2018.1) (required)
+-d --deliverable Name of deliverable (i.e. hstdp) (required)
+-n --name        Name of release (i.e. 2018.1) (required)
 -p --python      Python verison to use (i.e. 3.5, 3.6) (required)
+-m --metapackage Metapackage base to use (i.e. stsci-hst) (required)
 -f --final       Designate the environment to capture as a final delivery
                  environment. (optional)
 
@@ -49,14 +51,22 @@ fi
 
 while (( "${#}" )); do
     case "${1}" in
-	-n|--hstdp-name)
-	    hstdp_name=${2}
+        -d|--deliverable)
+            deliverable=${2}
+            shift 2
+            ;;
+	-n|--name)
+	    name=${2}
 	    shift 2
 	    ;;
 	-p|--python)
 	    pyver=${2}
 	    shift 2
 	    ;;
+        -m|--metapackage)
+            metapackage=${2}
+            shift 2
+            ;;
 	-f|--final)
 	    iter="final"
 	    shift
@@ -78,8 +88,13 @@ done
 
 eval set -- "${pkgs}"
 
-if [[ -z "$hstdp_name" ]]; then
-    echo "Must supply an HSTDP name with -n or --hstdp-name."
+if [[ -z "$deliverable" ]]; then
+    echo "Must supply a deliverable name with -d or --deliverable."
+    exit 1
+fi
+
+if [[ -z "$name" ]]; then
+    echo "Must supply a name with -n or --name."
     exit 1
 fi
 
@@ -89,35 +104,38 @@ if [[ -z "$pyver" ]]; then
     exit 1
 fi
 
+if [[ -z "$metapackage" ]]; then
+    echo "Must supply a conda metapackage with -m or --metapackage."
+    exit 1
+fi
+
 # Compose short form of python version for use in file name.
 pyver_S=${pyver//./}
 
 # Clone the releases git repository if the iteration is not "FINAL"
 # so the release iteration can be determined automatically.
 if [[ $iter != "final" ]]; then
-    # Clone HSTDP releases repository
+    # Clone pipeline releases repository
     clonedir=$(mktemp -d)
     git clone $releases_repo $clonedir
 
-    hstdp_dir=${clonedir}/hstdp
-    # If the hstdp-name subdir exists, get the list of linux spec files from it.
-    if [[ -d "${hstdp_dir}/${hstdp_name}" ]]; then
+    deliverable_dir=${clonedir}/${deliverable}
+    # If the name subdir exists, get the list of linux spec files from it.
+    if [[ -d "${deliverable_dir}/${name}" ]]; then
 	calculate_iter=true
     else
-	echo "Releases subdir ${hstdp_name} does not exist."
+	echo "Releases subdir ${name} does not exist."
         echo "This will be iteration 00."
 	iter="00"
     fi
 fi
 
-# If a HSTDP release dir already exits, calculate the iteration value from its contents.
+# If a release dir already exists, calculate the iteration value from its contents.
 if [[ $calculate_iter == true ]]; then
-    find ${hstdp_dir} -type d -name ${hstdp_name}/dev
-    if [[ ${?} -eq 0 ]]; then
-        dev_specs=$(ls -1 ${hstdp_dir}/${hstdp_name}/dev/hstdp*${os}*${pyver_S}*.txt)
-    fi
-
     latest_iter=-1
+    dev_specs=$(find ${deliverable_dir} -type f -wholename \
+                *${name}/dev/${deliverable}*${os}*${pyver_S}*.txt)
+
     # Determine the highest iteration found for the release name
     for dev_spec in ${dev_specs}; do
         #echo $dev_spec
@@ -139,13 +157,13 @@ if [[ $calculate_iter == true ]]; then
     iter=$(printf %02d ${latest_iter})
 fi
 
-env_name="hstdp-${hstdp_name}-${os}-py${pyver_S}.${iter}"
+env_name="${deliverable}-${name}-${os}-py${pyver_S}.${iter}"
 if [[ $latest_spec ]]; then
     echo "Creating conda environment ${env_name} from existing spec file..."
     conda create -y -q -n ${env_name} --file ${latest_spec}
 else
-    echo "Creating conda environment ${env_name} from stsci-hst metapackage..."
-    conda create -y -q -n $env_name -c $pub_channel -c defaults python=$pyver stsci-hst
+    echo "Creating conda environment ${env_name} from ${metapackage} metapackage..."
+    conda create -y -q -n ${env_name} -c ${pub_channel} -c defaults python=${pyver} ${metapackage}
 fi
 
 # Install any additional packages that were specified on the command line.
