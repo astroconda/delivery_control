@@ -132,12 +132,10 @@ fi
 
 # If a release dir already exists, calculate the iteration value from its contents.
 if [[ $calculate_iter == true ]]; then
-    find ${deliverable_dir} -type d -name ${name}/dev
-    if [[ ${?} -eq 0 ]]; then
-        dev_specs=$(ls -1 ${deliverable_dir}/${name}/dev/${deliverable}*${os}*${pyver_S}*.txt)
-    fi
-
     latest_iter=-1
+    dev_specs=$(find ${deliverable_dir} -type f -wholename \
+                *${name}/dev/${deliverable}*${os}*${pyver_S}*.txt)
+
     # Determine the highest iteration found for the release name
     for dev_spec in ${dev_specs}; do
         #echo $dev_spec
