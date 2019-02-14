@@ -224,7 +224,7 @@ def gen_specfiles(label, run_tests) {
                         }
                     }
                 } else {
-                    println('JenkinsfileRT not found for ${pkg_name}, skipping test run.")
+                    println("JenkinsfileRT not found for ${pkg_name}, skipping test run.")
                 } //end if(fileExists(jenkinsfile))
             } // endfor pkg
         }
