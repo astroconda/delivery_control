@@ -193,6 +193,10 @@ def gen_specfiles(label, run_tests) {
                                sh(script: "pip install --no-deps -e .")
                            }
                            println("Test commands(s):")
+                           // TODO: Remove after 2019.2 delivery.
+                           if (pkg_name == 'calcos') {
+                               sh(script: "conda install ci-watson")
+                           }
                            println(bc.test_cmds)
                            for (tcmd in bc.test_cmds) {
                                sh(script: "${tcmd} || true")
