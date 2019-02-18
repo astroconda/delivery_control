@@ -75,6 +75,7 @@ def gen_specfiles(label, run_tests) {
             metapkg_list = sh(script:"conda env list", returnStdout: true).trim().split('\n')
             metapkg_names = []
             for (line in metapkg_list) {
+                println(line)
                 if ('#' in line) {
                     continue
                 }
