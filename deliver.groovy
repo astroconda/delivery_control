@@ -72,7 +72,7 @@ def gen_specfiles(label, run_tests) {
 
             // List environments for testing
             sh "conda env list"
-            metapkg_list = sh(script:("conda env list", returnStdout: true).trim()
+            metapkg_list = sh(script:"conda env list", returnStdout: true).trim()
             metapkg_names = []
             for (pkg in metapkg_list) {
                 metapkg_names.add(pkg.tokenize()[0].trim()
