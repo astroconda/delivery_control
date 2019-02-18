@@ -286,7 +286,7 @@ node('master') {
         parallel(
             // Generate spec files. Only run tests on Linux (for now).
             Linux: { gen_specfiles('RHEL-6', true) },
-            MacOS: { gen_specfiles('OSX-10.13', false) }
+            //MacOS: { gen_specfiles('OSX-10.13', false) }
         )
     }
 }
