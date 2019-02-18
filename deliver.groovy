@@ -74,8 +74,11 @@ def gen_specfiles(label, run_tests) {
             sh "conda env list"
             metapkg_list = sh(script:"conda env list", returnStdout: true).trim()
             metapkg_names = []
-            for (pkg in metapkg_list) {
-                metapkg_names.add(pkg.tokenize()[0].trim())
+            for (line in metapkg_list) {
+                if ('#' in line) {
+                    continue
+                }
+                metapkg_names.add(line.tokenize()[0].trim())
             }
         }
 
