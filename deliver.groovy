@@ -93,6 +93,7 @@ def gen_specfiles(label, run_tests) {
             def env_name = sh(script: "ls hstdp*", returnStdout: true).trim()[0..-5]
             println("env_name: ${env_name}")
             for (pkg in pkg_list.tokenize()) {
+                pkg_name = pkg.tokenize('=')[0]
                 jenkinsfile = "${WORKDIR}/${pkg_name}/JenkinsfileRT"
                 if (!(fileExists(jenkinsfile))) {
                     continue
@@ -100,7 +101,6 @@ def gen_specfiles(label, run_tests) {
                     println("Found JenkinsfileRT not found for ${pkg_name}, installing and running tests.")
                 } //end if(!(fileExists(jenkinsfile)))
                 println("Extracting metadata for ${pkg}...")
-                pkg_name = pkg.tokenize('=')[0]
                 println("pkg_name: ${pkg_name}")
                 pkg_version = pkg.tokenize('=')[1]
                 ccmd = "${conda_exe} list -n ${env_name} | grep ${pkg_name} | grep dev"
