@@ -93,15 +93,10 @@ def gen_specfiles(label, run_tests) {
             def env_name = sh(script: "ls hstdp*", returnStdout: true).trim()[0..-5]
             println("env_name: ${env_name}")
             for (pkg in pkg_list.tokenize()) {
-                pkg_name = pkg.tokenize('=')[0]
-                jenkinsfile = "${WORKDIR}/${pkg_name}/JenkinsfileRT"
-                if (!(fileExists(jenkinsfile))) {
-                    continue
-                } else {
-                    println("Found JenkinsfileRT not found for ${pkg_name}, installing and running tests.")
-                } //end if(!(fileExists(jenkinsfile)))
                 println("Extracting metadata for ${pkg}...")
+                pkg_name = pkg.tokenize('=')[0]
                 println("pkg_name: ${pkg_name}")
+
                 pkg_version = pkg.tokenize('=')[1]
                 ccmd = "${conda_exe} list -n ${env_name} | grep ${pkg_name} | grep dev"
                 pkg_info = sh(script: ccmd,
@@ -115,8 +110,16 @@ def gen_specfiles(label, run_tests) {
                 meta = readYaml(filedata)
                 git_url = meta['source'].git_url
 
-                // Use this clone to run the full test suite.
+                // Use this clone to run the full test suite if defined.
                 sh "git clone ${git_url} ./${pkg_name}"
+
+                jenkinsfile = "${WORKDIR}/${pkg_name}/JenkinsfileRT"
+                if (!(fileExists(jenkinsfile))) {
+                    println("${jenkinsfile} not found, skipping package.")
+                    continue
+                } else {
+                    println("Found JenkinsfileRT for ${pkg_name}, installing and running tests.")
+                } //end if(!(fileExists(jenkinsfile)))
 
                 // For development only. Disable before use.
                 //if (pkg_name == "hstcal") {
@@ -124,10 +127,6 @@ def gen_specfiles(label, run_tests) {
                 //} else {
                     ////jenkinsfile = "${WORKDIR}/${pkg_name}/JenkinsfileRT"
                 //}
-
-
-                // Only run tests if JenkinsfileRT exists for project.
-                //if (fileExists(jenkinsfile)) {
 
                 // Post-process each -dev project's JenkinsfileRT to allow
                 // importing of only the configuration values without running
@@ -229,7 +228,6 @@ def gen_specfiles(label, run_tests) {
                            
                        }
                        
-                       //sh "conda remove ${conda_pkgs} --force -y"
                        sh "conda remove ${remove_pkgs} --force -y"
 
                        // Read in test reports for display.
