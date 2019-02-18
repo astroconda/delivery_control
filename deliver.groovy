@@ -72,6 +72,11 @@ def gen_specfiles(label, run_tests) {
 
             // List environments for testing
             sh "conda env list"
+            metapkg_list = sh(script:("conda env list", returnStdout: true).trim()
+            metapkg_names = []
+            for (pkg in metapkg_list) {
+                metapkg_names.add(pkg.tokenize()[0].trim()
+            }
         }
 
         // Get source repo for each aux package _at the commit used to
@@ -201,8 +206,21 @@ def gen_specfiles(label, run_tests) {
                            for (tcmd in bc.test_cmds) {
                                sh(script: "${tcmd} || true")
                            }
-                           // Uninstall packages pulled in for this test run.
-                           sh "conda remove ${conda_pkgs} --force -y"
+                           // Uninstall packages pulled in for this test run, leaving
+                           // any that were already present.
+                           def remove_pkgs = ""
+                           for (rpkg in conda_pkgs.split()) {
+                               if ('=' in rpkg) {
+                                   rpkg = rpkg.split('=')[0].trim()
+                               }
+                               if (!(rpkg in metapkg_names)) {
+                                   remove_pkgs = "${remove_pkgs} ${rpkg}"
+                               }
+                               
+                           }
+                           
+                           //sh "conda remove ${conda_pkgs} --force -y"
+                           sh "conda remove ${remove_pkgs} --force -y"
 
                            // Read in test reports for display.
                            // TODO: Use shared lib for this functionality.
