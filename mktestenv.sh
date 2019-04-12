@@ -23,6 +23,8 @@ pkgs=""
 
 scriptname=$(basename $0)
 
+# Command line argument handling
+#
 # Display help text when no arguments are supplied.
 if [[ $# -eq 0 ]];
 then

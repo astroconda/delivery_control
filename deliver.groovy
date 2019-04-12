@@ -27,6 +27,7 @@ def readYaml(data) {
 def gen_specfiles(label, run_tests) {
     
     node(label) {
+        timestamps {
 
         // Delete any existing job workspace directory contents.
         // The directory deleted is the one named after the jenkins pipeline job.
@@ -265,7 +266,7 @@ def gen_specfiles(label, run_tests) {
                     sh "rsync -avzr hstdp*.txt ${USERNAME}@${hostname}:${output_dir}"
                }
         }
-
+    } // end timestamps
     } // end node()
 }
 
